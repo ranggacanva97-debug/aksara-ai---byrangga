@@ -1,0 +1,2225 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AKSARA AI — by RANGGA</title>
+
+  <!-- Google Fonts: Poppins & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            aksara: {
+              bg: '#0B0B0B',
+              sidebar: '#121212',
+              surface: '#161616',
+              surfaceHover: '#1E1E1E',
+              border: '#262626',
+              borderLight: '#333333',
+              text: '#F5F5F7',
+              muted: '#8E8E93',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Marked.js untuk Markdown Rendering & DOMPurify untuk Sanitasi HTML -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.9/dist/purify.min.js"></script>
+
+  <!-- Tesseract.js untuk OCR Pembacaan Teks Gambar Lokal (Fallback & Penguat Analisis Foto) -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+  <style>
+    * {
+      font-family: 'Poppins', sans-serif;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #0B0B0B;
+      color: #F5F5F7;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    /* Custom Minimalist Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #262626;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3A3A3A;
+    }
+
+    /* Markdown Typography Styling */
+    .markdown-body {
+      font-size: 0.9375rem;
+      line-height: 1.75;
+      color: #F5F5F7;
+      word-wrap: break-word;
+    }
+    .markdown-body p {
+      margin-bottom: 0.85rem;
+    }
+    .markdown-body p:last-child {
+      margin-bottom: 0;
+    }
+    .markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4 {
+      font-weight: 600;
+      color: #FFFFFF;
+      margin-top: 1.25rem;
+      margin-bottom: 0.6rem;
+      line-height: 1.35;
+    }
+    .markdown-body h1 { font-size: 1.35rem; }
+    .markdown-body h2 { font-size: 1.18rem; }
+    .markdown-body h3 { font-size: 1.05rem; }
+    .markdown-body ul, .markdown-body ol {
+      margin-left: 1.35rem;
+      margin-bottom: 0.85rem;
+    }
+    .markdown-body ul { list-style-type: disc; }
+    .markdown-body ol { list-style-type: decimal; }
+    .markdown-body li {
+      margin-bottom: 0.35rem;
+    }
+    .markdown-body a {
+      color: #F5F5F7;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-color: #666666;
+      transition: all 0.15s ease;
+    }
+    .markdown-body a:hover {
+      color: #FFFFFF;
+      text-decoration-color: #FFFFFF;
+    }
+    .markdown-body blockquote {
+      border-left: 2px solid #444444;
+      padding-left: 1rem;
+      color: #A1A1AA;
+      margin: 0.85rem 0;
+      font-style: italic;
+    }
+    .markdown-body code:not(pre code) {
+      font-family: 'JetBrains Mono', monospace;
+      background-color: #1A1A1A;
+      border: 1px solid #2A2A2A;
+      padding: 0.12rem 0.38rem;
+      border-radius: 6px;
+      font-size: 0.84rem;
+      color: #E4E4E7;
+    }
+    .markdown-body pre {
+      background-color: #111111;
+      border: 1px solid #262626;
+      border-radius: 10px;
+      margin: 1rem 0;
+      overflow: hidden;
+    }
+    .markdown-body pre code {
+      font-family: 'JetBrains Mono', monospace;
+      display: block;
+      padding: 0.95rem 1rem;
+      overflow-x: auto;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: #E4E4E7;
+    }
+    .markdown-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.875rem;
+      display: block;
+      overflow-x: auto;
+    }
+    .markdown-body th, .markdown-body td {
+      border: 1px solid #262626;
+      padding: 0.55rem 0.8rem;
+      text-align: left;
+    }
+    .markdown-body th {
+      background-color: #161616;
+      font-weight: 600;
+      color: #FFFFFF;
+    }
+    .markdown-body hr {
+      border: 0;
+      border-top: 1px solid #262626;
+      margin: 1.25rem 0;
+    }
+
+    /* Subtle Pulse Animation for Thinking Indicator */
+    @keyframes subtlePulse {
+      0%, 100% { opacity: 0.35; transform: scale(0.95); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+    .dot-pulse {
+      animation: subtlePulse 1.3s infinite ease-in-out;
+    }
+    .dot-pulse:nth-child(2) { animation-delay: 0.2s; }
+    .dot-pulse:nth-child(3) { animation-delay: 0.4s; }
+
+    /* Smooth Fade Transition */
+    .fade-in {
+      animation: fadeIn 0.2s ease-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Drag-and-drop highlight */
+    .drag-active {
+      border-color: #F5F5F7 !important;
+      background-color: #1A1A1A !important;
+    }
+  </style>
+</head>
+<body class="bg-[#0B0B0B] text-[#F5F5F7] antialiased selection:bg-white selection:text-black">
+
+  <!-- App Container -->
+  <div id="app" class="flex h-screen w-full overflow-hidden relative">
+
+    <!-- Mobile Backdrop Overlay -->
+    <div id="sidebar-backdrop" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black/75 z-30 hidden lg:hidden transition-opacity"></div>
+
+    <!-- =================================================================== -->
+    <!-- SIDEBAR                                                             -->
+    <!-- =================================================================== -->
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-72 bg-[#121212] border-r border-[#262626] flex flex-col justify-between transition-all duration-200 ease-out transform -translate-x-full lg:translate-x-0 shrink-0">
+      
+      <!-- Sidebar Top: Brand & Navigation -->
+      <div class="flex flex-col flex-1 min-h-0">
+        <!-- Text-Only Brand Header -->
+        <div class="px-5 pt-5 pb-4 flex items-center justify-between border-b border-[#1E1E1E]">
+          <div onclick="startNewChat()" class="cursor-pointer select-none leading-tight">
+            <div class="text-lg font-bold tracking-tight text-white">AKSARA AI</div>
+            <div class="text-[11px] font-normal text-[#8E8E93] tracking-wide">by RANGGA</div>
+          </div>
+          <button onclick="toggleSidebar(false)" title="Tutup Sidebar" class="p-2 rounded-lg text-[#8E8E93] hover:text-white hover:bg-[#1C1C1C] transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/></svg>
+          </button>
+        </div>
+
+        <!-- Primary Navigation -->
+        <div class="p-3 space-y-1">
+          <button onclick="startNewChat()" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-[#161616] hover:bg-[#1F1F1F] border border-[#262626] text-sm font-medium text-white transition-colors">
+            <span class="flex items-center gap-2.5">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              Chat Baru
+            </span>
+            <span class="text-[11px] text-[#8E8E93]">Baru</span>
+          </button>
+
+          <button id="nav-chat" onclick="switchView('chat')" class="nav-item w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-sm text-[#F5F5F7] bg-[#1C1C1C] transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Chat
+          </button>
+
+          <button id="nav-history" onclick="switchView('history')" class="nav-item w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-sm text-[#8E8E93] hover:text-white hover:bg-[#191919] transition-colors">
+            <span class="flex items-center gap-2.5">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+              Riwayat
+            </span>
+            <span id="sidebar-history-badge" class="text-[11px] text-[#666666]">0</span>
+          </button>
+
+          <button id="nav-image" onclick="switchView('image')" class="nav-item w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-sm text-[#8E8E93] hover:text-white hover:bg-[#191919] transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+            Buat Gambar
+          </button>
+        </div>
+
+        <!-- Quick History Section in Sidebar -->
+        <div class="px-4 pt-2 pb-1.5 flex items-center justify-between">
+          <span class="text-[11px] font-medium uppercase tracking-wider text-[#8E8E93]">Percakapan Terbaru</span>
+        </div>
+
+        <div id="history-list" class="flex-1 overflow-y-auto px-3 pb-3 space-y-1">
+          <!-- History items rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Sidebar Bottom: Settings & About -->
+      <div class="p-3 border-t border-[#262626] space-y-1 bg-[#121212]">
+        <button id="nav-settings" onclick="switchView('settings')" class="nav-item w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-sm text-[#8E8E93] hover:text-white hover:bg-[#191919] transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          Pengaturan
+        </button>
+
+        <button id="nav-about" onclick="switchView('about')" class="nav-item w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-sm text-[#8E8E93] hover:text-white hover:bg-[#191919] transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          Tentang AKSARA AI
+        </button>
+      </div>
+    </aside>
+
+    <!-- =================================================================== -->
+    <!-- MAIN CONTENT AREA                                                   -->
+    <!-- =================================================================== -->
+    <main id="main-drop-zone" class="flex-1 flex flex-col min-w-0 h-full bg-[#0B0B0B] relative">
+      
+      <!-- Top Header Bar -->
+      <header class="h-14 px-4 sm:px-6 border-b border-[#262626] flex items-center justify-between shrink-0 bg-[#0B0B0B]/95 backdrop-blur-sm z-20">
+        <div class="flex items-center gap-3">
+          <button id="open-sidebar-btn" onclick="toggleSidebar(true)" title="Buka/Tutup Sidebar" class="p-2 rounded-lg text-[#8E8E93] hover:text-white hover:bg-[#161616] transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="6" y2="6"/><line x1="3" x2="21" y1="12" y2="12"/><line x1="3" x2="21" y1="18" y2="18"/></svg>
+          </button>
+          <div onclick="startNewChat()" class="cursor-pointer flex items-baseline gap-2 select-none">
+            <span class="font-bold text-sm sm:text-base tracking-tight text-white">AKSARA AI</span>
+            <span class="text-[11px] text-[#8E8E93]">by RANGGA</span>
+          </div>
+        </div>
+
+        <!-- Active Engine Pill -->
+        <div class="flex items-center gap-2">
+          <button onclick="switchView('settings')" id="header-engine-badge" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#161616] hover:bg-[#1E1E1E] border border-[#262626] text-xs text-[#8E8E93] hover:text-white transition-colors">
+            <span id="engine-status-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            <span id="engine-status-label" class="truncate max-w-[140px] sm:max-w-[230px]">Mode Gratis Aktif</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 1: CHAT INTERFACE                                    -->
+      <!-- ========================================================= -->
+      <section id="view-chat" class="flex-1 flex flex-col min-h-0 relative">
+
+        <!-- Scrollable Messages Container -->
+        <div id="chat-scroll-container" class="flex-1 overflow-y-auto px-4 sm:px-6">
+          
+          <!-- EMPTY STATE (Welcome Screen) -->
+          <div id="empty-state" class="min-h-full flex flex-col items-center justify-center max-w-2xl mx-auto py-8 text-center fade-in">
+            <div class="mb-6 select-none">
+              <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">AKSARA AI</h1>
+              <p class="text-xs sm:text-sm text-[#8E8E93] mt-0.5">by RANGGA</p>
+              <p class="text-xs text-[#737373] italic mt-2">"Teman berpikir, tanpa batas."</p>
+            </div>
+
+            <div class="mb-8">
+              <h2 class="text-lg sm:text-xl font-medium text-[#F5F5F7]">Selamat datang di AKSARA AI</h2>
+              <p class="text-sm text-[#8E8E93] mt-1">Ada yang ingin kamu tanyakan atau buat hari ini?</p>
+            </div>
+
+            <!-- 4 Simple Suggestion Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full text-left">
+              <button onclick="triggerImageUploadForPrompt('Tolong baca soal/teks pada gambar ini, jawab, dan jelaskan langkah penyelesaiannya secara rinci.')" class="p-3.5 rounded-xl bg-[#161616] hover:bg-[#1D1D1D] border border-[#262626] transition-colors">
+                <div class="text-xs font-medium text-[#F5F5F7]">Analisis Foto Soal & Dokumen</div>
+                <div class="text-xs text-[#8E8E93] mt-0.5 line-clamp-1">Unggah foto soal, catatan, atau screenshot</div>
+              </button>
+
+              <button onclick="useSuggestion('Tolong buatkan daftar pustaka APA 7th Edition tentang pemanfaatan kecerdasan buatan dalam pendidikan.', true)" class="p-3.5 rounded-xl bg-[#161616] hover:bg-[#1D1D1D] border border-[#262626] transition-colors">
+                <div class="text-xs font-medium text-[#F5F5F7]">Daftar Pustaka & Sumber Web</div>
+                <div class="text-xs text-[#8E8E93] mt-0.5 line-clamp-1">Referensi ilmiah nyata format APA 7th Edition</div>
+              </button>
+
+              <button onclick="useSuggestion('Jelaskan konsep dasar algoritma dan struktur data secara sederhana dengan contoh kode Python yang bersih.')" class="p-3.5 rounded-xl bg-[#161616] hover:bg-[#1D1D1D] border border-[#262626] transition-colors">
+                <div class="text-xs font-medium text-[#F5F5F7]">Jelaskan Konsep & Coding</div>
+                <div class="text-xs text-[#8E8E93] mt-0.5 line-clamp-1">Pahami materi kuliah atau pemrograman</div>
+              </button>
+
+              <button onclick="useSuggestion('Buat gambar pemandangan pantai tropis saat matahari terbenam dengan gaya sinematik dan pencahayaan hangat.')" class="p-3.5 rounded-xl bg-[#161616] hover:bg-[#1D1D1D] border border-[#262626] transition-colors">
+                <div class="text-xs font-medium text-[#F5F5F7]">Buat Gambar AI</div>
+                <div class="text-xs text-[#8E8E93] mt-0.5 line-clamp-1">Pemandangan pantai saat matahari terbenam</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- MESSAGES LIST -->
+          <div id="messages-list" class="hidden max-w-3xl mx-auto py-6 space-y-6">
+            <!-- Messages rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- CHAT INPUT AREA -->
+        <div class="px-4 sm:px-6 pt-2 pb-3 bg-[#0B0B0B] shrink-0">
+          <div class="max-w-3xl mx-auto">
+            
+            <!-- Local Model Progress Banner -->
+            <div id="local-model-banner" class="hidden mb-2.5 p-3 rounded-xl bg-[#161616] border border-[#262626] text-xs">
+              <div class="flex items-center justify-between mb-1.5">
+                <span id="local-model-status-text" class="text-[#F5F5F7] font-medium">Memuat model lokal...</span>
+                <span id="local-model-percent" class="text-[#8E8E93]">0%</span>
+              </div>
+              <div class="w-full h-1.5 bg-[#262626] rounded-full overflow-hidden">
+                <div id="local-model-bar" class="h-full bg-white transition-all duration-200" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <!-- Input Box Wrapper (Supports Drag & Drop) -->
+            <div id="chat-input-box" class="rounded-2xl bg-[#161616] border border-[#262626] focus-within:border-[#3A3A3A] transition-colors p-3 relative">
+
+              <!-- Image Attachments Preview Strip -->
+              <div id="attachment-preview-container" class="hidden flex flex-wrap gap-2.5 mb-2.5 pb-2.5 border-b border-[#242424]">
+                <!-- Thumbnails rendered dynamically -->
+              </div>
+
+              <!-- Image Generation Mode Pill (Visible when user toggles 'Buat Gambar' in chat) -->
+              <div id="chat-image-mode-banner" class="hidden mb-2 px-3 py-1.5 rounded-lg bg-[#1E1E1E] border border-[#2E2E2E] flex items-center justify-between text-xs">
+                <span class="text-[#F5F5F7]">Mode <strong>Buat Gambar AI</strong> aktif — ketik deskripsi visual yang ingin dibuat.</span>
+                <button type="button" onclick="toggleChatImageMode(false)" class="text-[#8E8E93] hover:text-white ml-2">Tutup</button>
+              </div>
+
+              <!-- Textarea -->
+              <textarea
+                id="chat-input"
+                rows="1"
+                placeholder="Tanyakan apa saja kepada AKSARA AI..."
+                class="w-full bg-transparent text-sm sm:text-[15px] text-[#F5F5F7] placeholder-[#737373] resize-none focus:outline-none max-h-44 leading-relaxed"
+                oninput="autoResizeTextarea(this)"
+                onkeydown="handleInputKeydown(event)"
+              ></textarea>
+
+              <!-- Hidden File Input for Multiple Images -->
+              <input
+                type="file"
+                id="image-file-input"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                multiple
+                class="hidden"
+                onchange="handleImageFilesSelected(this.files)"
+              />
+
+              <!-- Bottom Toolbar inside Input Box -->
+              <div class="mt-2.5 pt-2 border-t border-[#222222] flex flex-wrap items-center justify-between gap-2">
+                <div class="flex flex-wrap items-center gap-1.5">
+
+                  <!-- Upload Photo / Image Button -->
+                  <button type="button" id="btn-upload-image" onclick="document.getElementById('image-file-input').click()" title="Unggah Foto/Gambar (JPG, PNG, WEBP)" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-[#8E8E93] hover:text-white hover:bg-[#222222] border border-transparent transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                    <span>Upload Foto</span>
+                  </button>
+
+                  <!-- Search Web Toggle Button -->
+                  <button type="button" id="btn-search-web" onclick="toggleSearchWeb()" title="Aktifkan/Nonaktifkan Pencarian Internet & Referensi" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-[#8E8E93] hover:text-white hover:bg-[#222222] border border-transparent transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    <span>Search Web</span>
+                  </button>
+
+                  <!-- Buat Gambar Toggle Button -->
+                  <button type="button" id="btn-chat-image-mode" onclick="toggleChatImageMode()" title="Buat Gambar AI dari Teks" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-[#8E8E93] hover:text-white hover:bg-[#222222] border border-transparent transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                    <span>Buat Gambar</span>
+                  </button>
+                </div>
+
+                <!-- Send / Stop Button -->
+                <div class="flex items-center gap-2">
+                  <span class="hidden sm:inline text-[11px] text-[#666666]">Enter kirim · Shift+Enter baris baru</span>
+                  
+                  <button type="button" id="btn-send" onclick="handleSendMessage()" title="Kirim Pesan" class="p-2 rounded-xl bg-white text-black hover:bg-[#E5E5E5] disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                  </button>
+
+                  <button type="button" id="btn-stop" onclick="stopGeneration()" title="Hentikan Generasi" class="hidden px-3 py-1.5 rounded-xl bg-[#222222] hover:bg-[#2E2E2E] border border-[#3A3A3A] text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
+                    <span class="w-2 h-2 bg-white rounded-xs inline-block"></span>
+                    Stop
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Minimal Footer -->
+            <footer class="mt-2.5 text-center text-[11px] text-[#666666]">
+              © 2026 AKSARA AI — by RANGGA
+            </footer>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 2: RIWAYAT PERCAKAPAN (HISTORY MANAGER)              -->
+      <!-- ========================================================= -->
+      <section id="view-history" class="hidden flex-1 overflow-y-auto px-4 sm:px-6 py-6">
+        <div class="max-w-3xl mx-auto space-y-5 fade-in">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-xl font-semibold text-white">Riwayat Percakapan</h2>
+              <p class="text-xs sm:text-sm text-[#8E8E93] mt-0.5">Kelola, buka kembali, ganti nama, atau hapus percakapan tersimpan di perangkat Anda.</p>
+            </div>
+            <button onclick="startNewChat()" class="px-3.5 py-2 rounded-xl bg-white text-black hover:bg-[#E5E5E5] text-xs font-medium transition-colors">
+              + Chat Baru
+            </button>
+          </div>
+
+          <div id="full-history-list" class="space-y-2.5">
+            <!-- Rendered dynamically -->
+          </div>
+
+          <footer class="pt-4 text-center text-[11px] text-[#666666]">
+            © 2026 AKSARA AI — by RANGGA
+          </footer>
+        </div>
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 3: STUDIO BUAT GAMBAR (AI IMAGE GENERATOR)           -->
+      <!-- ========================================================= -->
+      <section id="view-image" class="hidden flex-1 overflow-y-auto px-4 sm:px-6 py-6">
+        <div class="max-w-3xl mx-auto space-y-6 fade-in">
+          <div>
+            <h2 class="text-xl font-semibold text-white">Buat Gambar AI</h2>
+            <p class="text-xs sm:text-sm text-[#8E8E93] mt-1">Ubah deskripsi teks menjadi gambar visual menggunakan mesin generatif gratis tanpa API key.</p>
+          </div>
+
+          <!-- Generator Controls -->
+          <div class="p-4 sm:p-5 rounded-2xl bg-[#161616] border border-[#262626] space-y-4">
+            <div>
+              <label for="studio-image-prompt" class="block text-xs font-medium text-[#F5F5F7] mb-1.5">Deskripsi Gambar (Prompt)</label>
+              <textarea
+                id="studio-image-prompt"
+                rows="3"
+                placeholder="Contoh: Pemandangan pantai saat matahari terbenam dengan gaya cinematic, pencahayaan keemasan, detail realistis..."
+                class="w-full rounded-xl bg-[#0B0B0B] border border-[#262626] focus:border-[#444444] p-3 text-sm text-[#F5F5F7] placeholder-[#666666] focus:outline-none resize-none"
+              ></textarea>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-[#8E8E93]">Rasio Ukuran:</span>
+                <div class="inline-flex rounded-xl bg-[#0B0B0B] border border-[#262626] p-1">
+                  <button type="button" onclick="selectStudioRatio('1:1')" id="ratio-1-1" class="ratio-btn px-3 py-1 rounded-lg text-xs font-medium bg-white text-black transition-colors">1:1</button>
+                  <button type="button" onclick="selectStudioRatio('16:9')" id="ratio-16-9" class="ratio-btn px-3 py-1 rounded-lg text-xs text-[#8E8E93] hover:text-white transition-colors">16:9</button>
+                  <button type="button" onclick="selectStudioRatio('9:16')" id="ratio-9-16" class="ratio-btn px-3 py-1 rounded-lg text-xs text-[#8E8E93] hover:text-white transition-colors">9:16</button>
+                </div>
+              </div>
+
+              <button type="button" id="btn-studio-generate" onclick="generateStudioImage()" class="px-4 py-2 rounded-xl bg-white hover:bg-[#E5E5E5] text-black text-xs font-semibold transition-colors">
+                Generate Gambar
+              </button>
+            </div>
+          </div>
+
+          <!-- Studio Output Preview -->
+          <div id="studio-result-container" class="hidden p-4 sm:p-5 rounded-2xl bg-[#161616] border border-[#262626] space-y-4">
+            <div class="flex items-center justify-between">
+              <span id="studio-status-label" class="text-xs text-[#8E8E93]">Memproses gambar...</span>
+              <div id="studio-action-buttons" class="hidden flex items-center gap-2">
+                <button type="button" onclick="generateStudioImage()" class="px-3 py-1.5 rounded-lg bg-[#222222] hover:bg-[#2C2C2C] text-xs text-white transition-colors">
+                  Generate Ulang
+                </button>
+                <button type="button" onclick="downloadGeneratedImage(currentStudioImageUrl, 'aksara-ai-image.jpg')" class="px-3 py-1.5 rounded-lg bg-white hover:bg-[#E5E5E5] text-xs font-medium text-black transition-colors">
+                  Download
+                </button>
+              </div>
+            </div>
+
+            <!-- Loading Box -->
+            <div id="studio-loading-box" class="py-16 flex flex-col items-center justify-center text-center border border-dashed border-[#2A2A2A] rounded-xl bg-[#0B0B0B]">
+              <div class="flex gap-1.5 mb-3">
+                <span class="w-2 h-2 rounded-full bg-white dot-pulse"></span>
+                <span class="w-2 h-2 rounded-full bg-white dot-pulse"></span>
+                <span class="w-2 h-2 rounded-full bg-white dot-pulse"></span>
+              </div>
+              <p class="text-xs text-[#8E8E93]">Sedang merender gambar AI berdasarkan deskripsi Anda...</p>
+            </div>
+
+            <!-- Error Box -->
+            <div id="studio-error-box" class="hidden p-4 rounded-xl bg-[#1B1212] border border-[#3A2020] text-xs text-red-300 leading-relaxed"></div>
+
+            <!-- Image Preview -->
+            <div id="studio-image-wrapper" class="hidden flex justify-center bg-[#0B0B0B] rounded-xl border border-[#262626] overflow-hidden p-2">
+              <img id="studio-image-preview" src="" alt="Hasil Gambar AKSARA AI" class="max-h-[520px] w-auto rounded-lg object-contain" />
+            </div>
+          </div>
+
+          <footer class="pt-4 text-center text-[11px] text-[#666666]">
+            © 2026 AKSARA AI — by RANGGA
+          </footer>
+        </div>
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 4: SETTINGS (PENGATURAN)                             -->
+      <!-- ========================================================= -->
+      <section id="view-settings" class="hidden flex-1 overflow-y-auto px-4 sm:px-6 py-6">
+        <div class="max-w-2xl mx-auto space-y-6 fade-in">
+          <div>
+            <h2 class="text-xl font-semibold text-white">Pengaturan</h2>
+            <p class="text-xs sm:text-sm text-[#8E8E93] mt-1">Konfigurasi mesin AI, model lokal browser, dan manajemen riwayat percakapan.</p>
+          </div>
+
+          <!-- Engine Selection Card -->
+          <div class="p-4 sm:p-5 rounded-2xl bg-[#161616] border border-[#262626] space-y-4">
+            <div>
+              <h3 class="text-sm font-semibold text-white">Engine & Model AI (Gratis Tanpa API Key)</h3>
+              <p class="text-xs text-[#8E8E93] mt-0.5">Pilih metode pemrosesan AI yang paling sesuai dengan perangkat Anda.</p>
+            </div>
+
+            <div class="space-y-2.5">
+              <!-- Option 1: Cloud Free Inference -->
+              <label class="flex items-start gap-3 p-3.5 rounded-xl bg-[#0B0B0B] border border-[#262626] cursor-pointer hover:border-[#3A3A3A] transition-colors">
+                <input type="radio" name="ai-engine" value="cloud" checked onchange="changeAIEngine('cloud')" class="mt-1 accent-white" />
+                <div class="flex-1">
+                  <div class="text-sm font-medium text-white">Mode Cloud Gratis (Rekomendasi — Cepat & Multimodal Vision)</div>
+                  <p class="text-xs text-[#8E8E93] mt-0.5">Langsung siap digunakan tanpa unduhan besar. Mendukung percakapan Bahasa Indonesia, analisis gambar/foto soal, pencarian referensi web, dan pembuatan gambar.</p>
+                </div>
+              </label>
+
+              <!-- Option 2: Browser Local WASM/WebGPU -->
+              <label class="flex items-start gap-3 p-3.5 rounded-xl bg-[#0B0B0B] border border-[#262626] cursor-pointer hover:border-[#3A3A3A] transition-colors">
+                <input type="radio" name="ai-engine" value="local" onchange="changeAIEngine('local')" class="mt-1 accent-white" />
+                <div class="flex-1">
+                  <div class="text-sm font-medium text-white">Mode Lokal di Browser (Transformers.js WASM/WebGPU)</div>
+                  <p class="text-xs text-[#8E8E93] mt-0.5">Mengunduh model open-source ringan (<code class="text-[#CCCCCC]">Xenova/Qwen1.5-0.5B-Chat</code>, ~350 MB) dan menyimpannya di cache browser. Pemrosesan teks berjalan 100% di perangkat Anda.</p>
+                  <p class="text-[11px] text-[#737373] mt-1">Catatan: Perangkat dengan RAM terbatas atau koneksi lambat membutuhkan waktu lebih lama saat pertama kali mengunduh model.</p>
+                </div>
+              </label>
+            </div>
+
+            <!-- Device & Local Model Status Info -->
+            <div class="p-3.5 rounded-xl bg-[#0B0B0B] border border-[#262626] space-y-2 text-xs">
+              <div class="flex justify-between">
+                <span class="text-[#8E8E93]">Dukungan WebGPU Perangkat:</span>
+                <span id="device-webgpu-status" class="text-white font-medium">Memeriksa...</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-[#8E8E93]">OCR Pembaca Teks Gambar Lokal:</span>
+                <span class="text-white font-medium">Tesseract.js (Siap di Browser)</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-[#8E8E93]">Status Model Bahasa Lokal:</span>
+                <span id="settings-local-status" class="text-white font-medium">Belum dimuat</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-[#8E8E93]">Ukuran & Penyimpanan Cache:</span>
+                <span id="settings-local-cache" class="text-[#8E8E93]">~350 MB (Cache Storage API)</span>
+              </div>
+
+              <div id="settings-progress-wrapper" class="hidden pt-2">
+                <div class="flex justify-between text-[11px] text-[#8E8E93] mb-1">
+                  <span id="settings-progress-label">Mengunduh file model...</span>
+                  <span id="settings-progress-pct">0%</span>
+                </div>
+                <div class="w-full h-1.5 bg-[#262626] rounded-full overflow-hidden">
+                  <div id="settings-progress-bar" class="h-full bg-white transition-all duration-200" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <div class="pt-2 flex flex-wrap gap-2">
+                <button type="button" id="btn-preload-local" onclick="initLocalModel()" class="px-3 py-1.5 rounded-lg bg-[#222222] hover:bg-[#2E2E2E] text-white text-xs transition-colors">
+                  Unduh / Muat Model Lokal Sekarang
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- History Management Card -->
+          <div class="p-4 sm:p-5 rounded-2xl bg-[#161616] border border-[#262626] space-y-3">
+            <h3 class="text-sm font-semibold text-white">Penyimpanan & Riwayat</h3>
+            <p class="text-xs text-[#8E8E93]">Seluruh riwayat percakapan disimpan secara lokal di perangkat Anda (<code class="text-[#CCCCCC]">localStorage</code>). Jumlah sesi tersimpan saat ini: <strong id="settings-chat-count" class="text-white">0</strong> percakapan.</p>
+            <div>
+              <button type="button" onclick="confirmClearAllHistory()" class="px-3.5 py-2 rounded-xl bg-[#1B1212] hover:bg-[#2A1616] border border-[#3A2020] text-red-400 text-xs font-medium transition-colors">
+                Hapus Semua Riwayat Percakapan
+              </button>
+            </div>
+          </div>
+
+          <!-- Version Info -->
+          <div class="p-4 sm:p-5 rounded-2xl bg-[#161616] border border-[#262626] space-y-1.5 text-xs">
+            <div class="flex justify-between">
+              <span class="text-[#8E8E93]">Nama Aplikasi</span>
+              <span class="text-white font-medium">AKSARA AI — by RANGGA</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-[#8E8E93]">Versi</span>
+              <span class="text-white">1.0.0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-[#8E8E93]">Akses & Biaya</span>
+              <span class="text-white">Gratis Sepenuhnya (Tanpa API Key / Billing)</span>
+            </div>
+          </div>
+
+          <footer class="pt-2 text-center text-[11px] text-[#666666]">
+            © 2026 AKSARA AI — by RANGGA
+          </footer>
+        </div>
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- VIEW 5: ABOUT & PRIVACY (TENTANG AKSARA AI)               -->
+      <!-- ========================================================= -->
+      <section id="view-about" class="hidden flex-1 overflow-y-auto px-4 sm:px-6 py-6">
+        <div class="max-w-2xl mx-auto space-y-6 fade-in">
+          <div class="border-b border-[#262626] pb-5">
+            <h2 class="text-2xl font-bold text-white">AKSARA AI</h2>
+            <p class="text-xs text-[#8E8E93] mt-0.5">by RANGGA</p>
+            <p class="text-sm text-[#8E8E93] italic mt-2">"Teman berpikir, tanpa batas."</p>
+          </div>
+
+          <div class="space-y-4 text-sm text-[#CCCCCC] leading-relaxed">
+            <p>
+              <strong>AKSARA AI</strong> adalah asisten kecerdasan buatan pribadi yang dirancang untuk membantu berpikir, membaca dan menganalisis gambar, menulis, meneliti, membuat visual, hingga menyusun daftar pustaka ilmiah secara gratis tanpa memerlukan API key, kartu kredit, maupun akun developer.
+            </p>
+
+            <div class="p-4 rounded-2xl bg-[#161616] border border-[#262626] space-y-2.5">
+              <h3 class="text-sm font-semibold text-white">Transparansi Privasi & Pemrosesan Data</h3>
+              <ul class="list-disc ml-5 space-y-1.5 text-xs text-[#8E8E93]">
+                <li><strong>Riwayat Percakapan:</strong> Disimpan sepenuhnya di penyimpanan lokal browser Anda (<code>localStorage</code>) dan tidak disimpan di database server kami.</li>
+                <li><strong>Analisis Gambar & OCR:</strong> Gambar yang Anda unggah diproses menggunakan model vision multimodal gratis serta ekstraksi teks lokal (<em>Tesseract.js</em>) langsung di browser Anda untuk membaca soal, dokumen, maupun tangkapan layar.</li>
+                <li><strong>Mode Chat Cloud vs Lokal:</strong> Pada Mode Cloud Gratis, pertanyaan dikirim ke endpoint inferensi publik gratis. Pada Mode Lokal (WASM/WebGPU), model dijalankan 100% di perangkat Anda setelah diunduh ke cache browser.</li>
+                <li><strong>Pembuatan Gambar:</strong> Deskripsi visual diproses melalui layanan generator gambar publik gratis tanpa API key.</li>
+                <li><strong>Pencarian Web & Referensi:</strong> Kata kunci pencarian dikirim ke API publik terbuka (<em>Crossref</em>, <em>OpenAlex</em>, dan <em>Wikipedia</em>) untuk mengambil metadata jurnal, artikel, dan tautan sumber asli tanpa mengarang referensi.</li>
+              </ul>
+            </div>
+          </div>
+
+          <footer class="pt-4 text-center text-[11px] text-[#666666]">
+            © 2026 AKSARA AI — by RANGGA
+          </footer>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- CUSTOM MODAL (Replaces native alert/confirm/prompt cleanly) -->
+  <div id="custom-modal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="w-full max-w-sm rounded-2xl bg-[#161616] border border-[#2E2E2E] p-5 space-y-4 fade-in">
+      <h3 id="modal-title" class="text-base font-semibold text-white">Konfirmasi</h3>
+      <p id="modal-message" class="text-xs text-[#8E8E93] leading-relaxed"></p>
+      <input id="modal-input" type="text" class="hidden w-full rounded-xl bg-[#0B0B0B] border border-[#2E2E2E] px-3 py-2 text-sm text-white focus:outline-none focus:border-white" />
+      <div class="flex justify-end gap-2 pt-1">
+        <button id="modal-cancel-btn" onclick="closeModal()" class="px-3.5 py-1.5 rounded-xl bg-[#222222] hover:bg-[#2C2C2C] text-xs text-[#CCCCCC] transition-colors">Batal</button>
+        <button id="modal-confirm-btn" class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#E5E5E5] text-xs font-medium text-black transition-colors">Ya, Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden px-4 py-2.5 rounded-xl bg-[#1A1A1A] border border-[#333333] text-xs text-white shadow-lg fade-in">
+    Tersalin ke clipboard
+  </div>
+
+  <!-- MAIN APPLICATION SCRIPT -->
+  <script>
+    // =========================================================================
+    // 1. STATE & CONFIGURATION
+    // =========================================================================
+    const STORAGE_KEY = 'aksara_ai_chats_v2';
+    const ENGINE_PREF_KEY = 'aksara_ai_engine_pref_v2';
+
+    let chats = [];
+    let activeChatId = null;
+    let isGenerating = false;
+    let abortController = null;
+
+    // Input & Attachment States
+    let attachedImages = []; // Array of { id, name, dataUrl, base64, mimeType }
+    let searchWebEnabled = false;
+    let chatImageModeEnabled = false;
+    let studioRatio = '1:1';
+    let currentStudioImageUrl = '';
+
+    // Engine States ('cloud' | 'local')
+    let aiEngine = localStorage.getItem(ENGINE_PREF_KEY) || 'cloud';
+    let localPipeline = null;
+    let isLocalModelLoading = false;
+    let localModelReady = false;
+
+    // System Prompt defining AKSARA AI's persona & strict honesty rules
+    const SYSTEM_PROMPT = `Kamu adalah AKSARA AI (by RANGGA), asisten kecerdasan buatan yang cerdas, natural, ramah, jujur, dan langsung ke inti permasalahan tanpa basa-basi berlebihan.
+Aturan penting:
+1. Gunakan Bahasa Indonesia yang baik, natural, dan menyesuaikan gaya bahasa pengguna (santai maupun formal).
+2. Gunakan format Markdown yang rapi (poin, tabel, blok kode) jika membantu kejelasan jawaban.
+3. Jika pengguna mengunggah gambar (soal, dokumen, tangkapan layar, grafik, atau objek), baca dan analisis seluruh isi visual serta teks di dalamnya secara cermat untuk menjawab pertanyaan pengguna dengan akurat.
+4. Jangan pernah mengarang fakta, URL, DOI, nama jurnal, penulis, atau tahun terbit. Jika tidak mengetahui sesuatu, katakan dengan jujur.
+5. Jika diberikan hasil pencarian web nyata dalam konteks sistem, susun jawaban berdasarkan sumber tersebut dan buat Daftar Pustaka format APA 7th Edition (atau format lain jika diminta) hanya dari metadata asli yang tersedia.`;
+
+    // =========================================================================
+    // 2. INITIALIZATION & MARKED SETUP
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      setupMarkdownRenderer();
+      loadChatsFromStorage();
+      checkWebGPUStatus();
+      syncEngineUI();
+      setupDragAndDrop();
+
+      if (chats.length === 0) {
+        renderEmptyState();
+      } else {
+        activeChatId = chats[0].id;
+        renderActiveChat();
+      }
+      renderHistorySidebar();
+    });
+
+    function setupMarkdownRenderer() {
+      if (typeof marked !== 'undefined') {
+        const renderer = new marked.Renderer();
+        renderer.code = function(codeObj, langStr) {
+          const codeText = typeof codeObj === 'object' ? codeObj.text : codeObj;
+          const language = (typeof codeObj === 'object' ? codeObj.lang : langStr) || 'text';
+          const escapedCode = escapeHtml(codeText);
+          return `
+            <div class="my-3 rounded-xl overflow-hidden border border-[#262626] bg-[#111111]">
+              <div class="flex items-center justify-between px-3.5 py-2 bg-[#161616] border-b border-[#222222] text-[11px] text-[#8E8E93]">
+                <span class="font-mono uppercase">${escapeHtml(language)}</span>
+                <button type="button" onclick="copyCodeBlock(this)" class="flex items-center gap-1 text-[#8E8E93] hover:text-white transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                  <span>Salin Kode</span>
+                </button>
+              </div>
+              <pre class="!m-0 !border-0 !rounded-none"><code>${escapedCode}</code></pre>
+            </div>
+          `;
+        };
+        marked.setOptions({
+          renderer,
+          breaks: true,
+          gfm: true
+        });
+      }
+    }
+
+    // =========================================================================
+    // 3. NAVIGATION & SIDEBAR CONTROLS
+    // =========================================================================
+    function toggleSidebar(forceOpen) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebar-backdrop');
+      const isMobile = window.innerWidth < 1024;
+
+      if (isMobile) {
+        const willOpen = typeof forceOpen === 'boolean' ? forceOpen : sidebar.classList.contains('-translate-x-full');
+        if (willOpen) {
+          sidebar.classList.remove('-translate-x-full');
+          backdrop.classList.remove('hidden');
+        } else {
+          sidebar.classList.add('-translate-x-full');
+          backdrop.classList.add('hidden');
+        }
+      } else {
+        const willCollapse = typeof forceOpen === 'boolean' ? !forceOpen : !sidebar.classList.contains('lg:hidden');
+        if (willCollapse) {
+          sidebar.classList.add('lg:hidden');
+        } else {
+          sidebar.classList.remove('lg:hidden');
+        }
+      }
+    }
+
+    function switchView(viewName) {
+      const views = ['chat', 'history', 'image', 'settings', 'about'];
+      views.forEach(v => {
+        const el = document.getElementById('view-' + v);
+        if (el) el.classList.toggle('hidden', v !== viewName);
+      });
+
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.classList.remove('bg-[#1C1C1C]', 'text-[#F5F5F7]');
+        btn.classList.add('text-[#8E8E93]');
+      });
+      const activeNav = document.getElementById('nav-' + viewName);
+      if (activeNav) {
+        activeNav.classList.add('bg-[#1C1C1C]', 'text-[#F5F5F7]');
+        activeNav.classList.remove('text-[#8E8E93]');
+      }
+
+      if (viewName === 'history') {
+        renderFullHistoryView();
+      }
+      if (viewName === 'settings') {
+        document.getElementById('settings-chat-count').textContent = chats.length;
+      }
+
+      if (window.innerWidth < 1024) {
+        toggleSidebar(false);
+      }
+    }
+
+    // =========================================================================
+    // 4. CHAT HISTORY & LOCALSTORAGE MANAGEMENT
+    // =========================================================================
+    function loadChatsFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) chats = parsed;
+        }
+      } catch (e) {
+        console.warn('Gagal memuat riwayat:', e);
+        chats = [];
+      }
+    }
+
+    function saveChatsToStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
+      } catch (e) {
+        console.warn('Penyimpanan lokal penuh:', e);
+      }
+      renderHistorySidebar();
+      if (!document.getElementById('view-history').classList.contains('hidden')) {
+        renderFullHistoryView();
+      }
+    }
+
+    function startNewChat() {
+      if (isGenerating) stopGeneration();
+      activeChatId = null;
+      clearAllAttachments();
+      toggleChatImageMode(false);
+      switchView('chat');
+      renderEmptyState();
+      renderHistorySidebar();
+      document.getElementById('chat-input').focus();
+    }
+
+    function selectChat(chatId) {
+      if (isGenerating) stopGeneration();
+      activeChatId = chatId;
+      switchView('chat');
+      renderActiveChat();
+      renderHistorySidebar();
+    }
+
+    function promptRenameChat(chatId, event) {
+      if (event) event.stopPropagation();
+      const chat = chats.find(c => c.id === chatId);
+      if (!chat) return;
+
+      openModal({
+        title: 'Ganti Nama Percakapan',
+        message: 'Masukkan judul baru untuk percakapan ini:',
+        showInput: true,
+        inputValue: chat.title,
+        confirmText: 'Simpan',
+        onConfirm: (newTitle) => {
+          const trimmed = (newTitle || '').trim();
+          if (trimmed) {
+            chat.title = trimmed;
+            saveChatsToStorage();
+            showToast('Judul percakapan diperbarui');
+          }
+        }
+      });
+    }
+
+    function confirmDeleteChat(chatId, event) {
+      if (event) event.stopPropagation();
+      openModal({
+        title: 'Hapus Percakapan',
+        message: 'Percakapan ini akan dihapus secara permanen dari perangkat Anda.',
+        confirmText: 'Hapus',
+        onConfirm: () => {
+          chats = chats.filter(c => c.id !== chatId);
+          if (activeChatId === chatId) {
+            activeChatId = chats.length > 0 ? chats[0].id : null;
+          }
+          saveChatsToStorage();
+          if (activeChatId) {
+            renderActiveChat();
+          } else {
+            renderEmptyState();
+          }
+          showToast('Percakapan dihapus');
+        }
+      });
+    }
+
+    function confirmClearAllHistory() {
+      openModal({
+        title: 'Hapus Semua Riwayat',
+        message: 'Semua riwayat percakapan yang tersimpan di browser ini akan dihapus permanen. Lanjutkan?',
+        confirmText: 'Hapus Semua',
+        onConfirm: () => {
+          chats = [];
+          activeChatId = null;
+          saveChatsToStorage();
+          document.getElementById('settings-chat-count').textContent = '0';
+          renderEmptyState();
+          showToast('Semua riwayat berhasil dihapus');
+        }
+      });
+    }
+
+    function renderHistorySidebar() {
+      const listEl = document.getElementById('history-list');
+      const badgeEl = document.getElementById('sidebar-history-badge');
+      badgeEl.textContent = chats.length;
+
+      if (chats.length === 0) {
+        listEl.innerHTML = `<div class="px-3 py-6 text-center text-xs text-[#666666]">Belum ada riwayat percakapan.</div>`;
+        return;
+      }
+
+      listEl.innerHTML = chats.slice(0, 25).map(chat => {
+        const isActive = chat.id === activeChatId;
+        return `
+          <div onclick="selectChat('${chat.id}')" class="group flex items-center justify-between px-3 py-2 rounded-xl cursor-pointer text-xs transition-colors ${isActive ? 'bg-[#1D1D1D] text-white font-medium' : 'text-[#8E8E93] hover:bg-[#191919] hover:text-white'}">
+            <span class="truncate pr-2">${escapeHtml(chat.title)}</span>
+            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0">
+              <button type="button" onclick="promptRenameChat('${chat.id}', event)" title="Ganti Nama" class="p-1 rounded hover:bg-[#2A2A2A] text-[#8E8E93] hover:text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+              </button>
+              <button type="button" onclick="confirmDeleteChat('${chat.id}', event)" title="Hapus" class="p-1 rounded hover:bg-[#2A2A2A] text-[#8E8E93] hover:text-red-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderFullHistoryView() {
+      const container = document.getElementById('full-history-list');
+      if (chats.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 rounded-2xl bg-[#161616] border border-[#262626] text-center text-xs text-[#8E8E93]">
+            Belum ada percakapan tersimpan. Mulai percakapan baru sekarang.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = chats.map(chat => {
+        const msgCount = chat.messages ? chat.messages.length : 0;
+        const dateStr = new Date(chat.createdAt).toLocaleDateString('id-ID', {
+          day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
+        return `
+          <div onclick="selectChat('${chat.id}')" class="p-4 rounded-2xl bg-[#161616] hover:bg-[#1B1B1B] border border-[#262626] flex items-center justify-between gap-3 cursor-pointer transition-colors">
+            <div class="min-w-0">
+              <div class="text-sm font-medium text-white truncate">${escapeHtml(chat.title)}</div>
+              <div class="text-[11px] text-[#8E8E93] mt-0.5">${dateStr} · ${msgCount} pesan</div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button type="button" onclick="promptRenameChat('${chat.id}', event)" class="px-2.5 py-1.5 rounded-lg bg-[#222222] hover:bg-[#2C2C2C] text-xs text-[#CCCCCC] hover:text-white transition-colors">
+                Ganti Nama
+              </button>
+              <button type="button" onclick="confirmDeleteChat('${chat.id}', event)" class="px-2.5 py-1.5 rounded-lg bg-[#1F1414] hover:bg-[#2D1818] text-xs text-red-400 transition-colors">
+                Hapus
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // 5. IMAGE UPLOAD, PREVIEW & DRAG-AND-DROP HANDLERS
+    // =========================================================================
+    function setupDragAndDrop() {
+      const dropZone = document.getElementById('main-drop-zone');
+      const inputBox = document.getElementById('chat-input-box');
+
+      ['dragenter', 'dragover'].forEach(evtName => {
+        dropZone.addEventListener(evtName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          inputBox.classList.add('drag-active');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(evtName => {
+        dropZone.addEventListener(evtName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          inputBox.classList.remove('drag-active');
+        });
+      });
+
+      dropZone.addEventListener('drop', (e) => {
+        const files = e.dataTransfer?.files;
+        if (files && files.length > 0) {
+          switchView('chat');
+          handleImageFilesSelected(files);
+        }
+      });
+    }
+
+    async function handleImageFilesSelected(fileList) {
+      if (!fileList || fileList.length === 0) return;
+
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      for (const file of Array.from(fileList)) {
+        if (!allowedTypes.includes(file.type)) {
+          showToast('Format didukung: JPG, JPEG, PNG, WEBP');
+          continue;
+        }
+        if (attachedImages.length >= 4) {
+          showToast('Maksimal 4 gambar per pesan');
+          break;
+        }
+
+        try {
+          const resizedDataUrl = await resizeImageForInference(file, 1024);
+          const base64Part = resizedDataUrl.split(',')[1];
+          attachedImages.push({
+            id: 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+            name: file.name,
+            dataUrl: resizedDataUrl,
+            base64: base64Part,
+            mimeType: 'image/jpeg'
+          });
+        } catch (err) {
+          console.error('Gagal memproses file gambar:', err);
+          showToast('Gagal memuat salah satu gambar');
+        }
+      }
+
+      document.getElementById('image-file-input').value = '';
+      renderAttachmentPreviews();
+    }
+
+    function resizeImageForInference(file, maxDim) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > maxDim || height > maxDim) {
+              if (width > height) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              } else {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.86));
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function renderAttachmentPreviews() {
+      const container = document.getElementById('attachment-preview-container');
+      if (attachedImages.length === 0) {
+        container.classList.add('hidden');
+        container.innerHTML = '';
+        return;
+      }
+
+      container.classList.remove('hidden');
+      container.innerHTML = attachedImages.map(img => `
+        <div class="relative group w-16 h-16 rounded-xl overflow-hidden border border-[#333333] bg-[#0B0B0B]">
+          <img src="${img.dataUrl}" alt="${escapeHtml(img.name)}" class="w-full h-full object-cover" />
+          <button type="button" onclick="removeAttachment('${img.id}')" title="Hapus Gambar" class="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/80 hover:bg-red-600 text-white flex items-center justify-center text-xs transition-colors">
+            ×
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function removeAttachment(imgId) {
+      attachedImages = attachedImages.filter(img => img.id !== imgId);
+      renderAttachmentPreviews();
+    }
+
+    function clearAllAttachments() {
+      attachedImages = [];
+      renderAttachmentPreviews();
+    }
+
+    function triggerImageUploadForPrompt(promptText) {
+      const input = document.getElementById('chat-input');
+      input.value = promptText;
+      autoResizeTextarea(input);
+      document.getElementById('image-file-input').click();
+    }
+
+    // =========================================================================
+    // 6. INPUT CONTROLS & TOGGLES
+    // =========================================================================
+    function autoResizeTextarea(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 176) + 'px';
+    }
+
+    function handleInputKeydown(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        handleSendMessage();
+      }
+    }
+
+    function toggleSearchWeb(forceVal) {
+      searchWebEnabled = typeof forceVal === 'boolean' ? forceVal : !searchWebEnabled;
+      const btn = document.getElementById('btn-search-web');
+      if (searchWebEnabled) {
+        btn.classList.add('bg-white', 'text-black', 'font-medium');
+        btn.classList.remove('text-[#8E8E93]', 'hover:text-white', 'hover:bg-[#222222]');
+      } else {
+        btn.classList.remove('bg-white', 'text-black', 'font-medium');
+        btn.classList.add('text-[#8E8E93]', 'hover:text-white', 'hover:bg-[#222222]');
+      }
+    }
+
+    function toggleChatImageMode(forceVal) {
+      chatImageModeEnabled = typeof forceVal === 'boolean' ? forceVal : !chatImageModeEnabled;
+      const btn = document.getElementById('btn-chat-image-mode');
+      const banner = document.getElementById('chat-image-mode-banner');
+      const input = document.getElementById('chat-input');
+
+      if (chatImageModeEnabled) {
+        btn.classList.add('bg-white', 'text-black', 'font-medium');
+        btn.classList.remove('text-[#8E8E93]', 'hover:text-white', 'hover:bg-[#222222]');
+        banner.classList.remove('hidden');
+        input.placeholder = 'Deskripsikan gambar yang ingin dibuat oleh AKSARA AI...';
+        input.focus();
+      } else {
+        btn.classList.remove('bg-white', 'text-black', 'font-medium');
+        btn.classList.add('text-[#8E8E93]', 'hover:text-white', 'hover:bg-[#222222]');
+        banner.classList.add('hidden');
+        input.placeholder = 'Tanyakan apa saja kepada AKSARA AI...';
+      }
+    }
+
+    function useSuggestion(text, enableSearch = false) {
+      if (enableSearch) toggleSearchWeb(true);
+      const input = document.getElementById('chat-input');
+      input.value = text;
+      autoResizeTextarea(input);
+      handleSendMessage();
+    }
+
+    // =========================================================================
+    // 7. REAL WEB SEARCH & ACADEMIC REFERENCE ENGINE (NO API KEY NEEDED)
+    // =========================================================================
+    function shouldAutoTriggerWebSearch(text) {
+      const lower = text.toLowerCase();
+      const keywords = [
+        'sumber terpercaya', 'daftar pustaka', 'referensi', 'jurnal ilmiah', 'jurnal',
+        'link sumber', 'berita terbaru', 'informasi terkini', 'cek fakta', 'verifikasi',
+        'website resmi', 'data penelitian', 'referensi makalah', 'cari di internet',
+        'menurut sumber', 'carikan sumber', 'carikan referensi', 'buatkan daftar pustaka',
+        'apa 7', 'sitasi', 'bibliografi', 'terbaru 2025', 'terbaru 2026'
+      ];
+      return keywords.some(kw => lower.includes(kw));
+    }
+
+    function extractSearchQuery(rawPrompt) {
+      return rawPrompt
+        .replace(/tolong|buatkan|carikan|daftar pustaka|referensi|sumber terpercaya|jurnal ilmiah|apa 7th edition|apa 7|tentang|mengenai|cari di internet|cek fakta/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim() || rawPrompt.trim();
+    }
+
+    async function performRealWebSearch(userPrompt, onStatusUpdate, signal) {
+      const cleanQuery = extractSearchQuery(userPrompt);
+      const sources = [];
+
+      onStatusUpdate('🔎 Mencari sumber terpercaya...');
+
+      // 1. Search Crossref API (Academic Journals & Publications)
+      try {
+        onStatusUpdate('🔎 Mencari publikasi akademik & jurnal ilmiah...');
+        const crossrefUrl = `https://api.crossref.org/works?query=${encodeURIComponent(cleanQuery)}&rows=4&select=DOI,title,author,published-print,published-online,container-title,URL`;
+        const crRes = await fetch(crossrefUrl, { signal });
+        if (crRes.ok) {
+          const crData = await crRes.json();
+          const items = crData?.message?.items || [];
+          for (const item of items) {
+            const title = Array.isArray(item.title) ? item.title[0] : item.title;
+            const url = item.URL || (item.DOI ? `https://doi.org/${item.DOI}` : null);
+            if (!title || !url) continue;
+
+            const authors = Array.isArray(item.author)
+              ? item.author.slice(0, 4).map(a => `${a.family || ''}${a.given ? ', ' + a.given[0] + '.' : ''}`).filter(Boolean)
+              : [];
+            const year = item['published-print']?.['date-parts']?.[0]?.[0]
+              || item['published-online']?.['date-parts']?.[0]?.[0]
+              || null;
+            const journal = Array.isArray(item['container-title']) ? item['container-title'][0] : (item['container-title'] || 'Publikasi Akademik / Crossref');
+
+            sources.push({
+              title,
+              siteName: journal,
+              authors,
+              year,
+              doi: item.DOI || null,
+              url,
+              relevance: `Publikasi ilmiah terindeks Crossref yang relevan dengan topik "${cleanQuery}".`
+            });
+          }
+        }
+      } catch (e) {
+        if (e.name === 'AbortError') throw e;
+      }
+
+      // 2. Search OpenAlex API (Open Research & University Works)
+      try {
+        onStatusUpdate('🔎 Membuka dan memeriksa sumber penelitian...');
+        const openAlexUrl = `https://api.openalex.org/works?search=${encodeURIComponent(cleanQuery)}&per-page=3`;
+        const oaRes = await fetch(openAlexUrl, { signal });
+        if (oaRes.ok) {
+          const oaData = await oaRes.json();
+          const results = oaData?.results || [];
+          for (const work of results) {
+            const title = work.title;
+            const url = work.doi || work.id;
+            if (!title || !url || sources.some(s => s.title.toLowerCase() === title.toLowerCase())) continue;
+
+            const authors = Array.isArray(work.authorships)
+              ? work.authorships.slice(0, 4).map(a => a.author?.display_name).filter(Boolean)
+              : [];
+            const sourceVenue = work.primary_location?.source?.display_name || 'Repositori Riset OpenAlex';
+
+            sources.push({
+              title,
+              siteName: sourceVenue,
+              authors,
+              year: work.publication_year || null,
+              doi: work.doi ? work.doi.replace('https://doi.org/', '') : null,
+              url,
+              relevance: `Karya ilmiah terbuka (OpenAlex) terkait "${cleanQuery}".`
+            });
+          }
+        }
+      } catch (e) {
+        if (e.name === 'AbortError') throw e;
+      }
+
+      // 3. Search Wikipedia Indonesia API (Encyclopedia & General Reference)
+      try {
+        onStatusUpdate('🔎 Membandingkan informasi referensi umum...');
+        const wikiUrl = `https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanQuery)}&utf8=&format=json&origin=*&srlimit=2`;
+        const wRes = await fetch(wikiUrl, { signal });
+        if (wRes.ok) {
+          const wData = await wRes.json();
+          const wikiResults = wData?.query?.search || [];
+          for (const w of wikiResults) {
+            const pageUrl = `https://id.wikipedia.org/wiki/${encodeURIComponent(w.title.replace(/\s+/g, '_'))}`;
+            const snippetClean = w.snippet.replace(/<[^>]*>?/gm, '');
+            sources.push({
+              title: w.title,
+              siteName: 'Wikipedia Bahasa Indonesia',
+              authors: ['Kontributor Wikipedia'],
+              year: w.timestamp ? new Date(w.timestamp).getFullYear() : null,
+              doi: null,
+              url: pageUrl,
+              relevance: snippetClean || `Artikel referensi ensiklopedia mengenai "${w.title}".`
+            });
+          }
+        }
+      } catch (e) {
+        if (e.name === 'AbortError') throw e;
+      }
+
+      return {
+        query: cleanQuery,
+        sources: sources.slice(0, 6)
+      };
+    }
+
+    // =========================================================================
+    // 8. SEND MESSAGE, VISION ANALYSIS, IMAGE GENERATION & STREAMING
+    // =========================================================================
+    function isImageGenerationRequest(text) {
+      if (chatImageModeEnabled) return true;
+      const lower = text.toLowerCase().trim();
+      return /^(buat|buatkan|generate|lukis|gambar|gambarkan)\s+(gambar|ilustrasi|foto|lukisan|wallpaper|poster|desain)/i.test(lower);
+    }
+
+    async function handleSendMessage(overrideText = null, overrideImages = null) {
+      const inputEl = document.getElementById('chat-input');
+      const text = overrideText !== null ? overrideText : inputEl.value.trim();
+      const imagesToSend = overrideImages !== null ? overrideImages : [...attachedImages];
+
+      if (!text && imagesToSend.length === 0) return;
+      if (isGenerating) return;
+
+      const finalUserText = text || 'Tolong deskripsikan dan analisis gambar ini secara jelas.';
+
+      // Ensure active chat exists
+      if (!activeChatId) {
+        const newChat = {
+          id: 'chat_' + Date.now(),
+          title: finalUserText.slice(0, 42) + (finalUserText.length > 42 ? '...' : ''),
+          createdAt: Date.now(),
+          messages: []
+        };
+        chats.unshift(newChat);
+        activeChatId = newChat.id;
+      }
+
+      const currentChat = chats.find(c => c.id === activeChatId);
+
+      // Add User Message
+      const userMessage = {
+        id: 'msg_' + Date.now(),
+        role: 'user',
+        content: finalUserText,
+        images: imagesToSend.map(img => ({ dataUrl: img.dataUrl, name: img.name })),
+        timestamp: Date.now()
+      };
+      currentChat.messages.push(userMessage);
+
+      // Clear Input UI
+      if (overrideText === null) {
+        inputEl.value = '';
+        inputEl.style.height = 'auto';
+        clearAllAttachments();
+      }
+
+      saveChatsToStorage();
+      renderActiveChat();
+
+      // Start Assistant Response Generation
+      isGenerating = true;
+      abortController = new AbortController();
+      updateGenerationButtons(true);
+
+      const assistantMsgId = 'msg_' + (Date.now() + 1);
+      const assistantMessage = {
+        id: assistantMsgId,
+        role: 'assistant',
+        content: '',
+        generatedImage: null,
+        statusText: 'AKSARA AI sedang berpikir...',
+        sources: [],
+        searchQuery: '',
+        timestamp: Date.now()
+      };
+      currentChat.messages.push(assistantMessage);
+      renderActiveChat();
+
+      try {
+        // CASE A: AI Image Generation inside Chat
+        if (imagesToSend.length === 0 && isImageGenerationRequest(finalUserText)) {
+          assistantMessage.statusText = 'Membuat gambar AI berdasarkan deskripsi Anda...';
+          updateAssistantMessageDOM(assistantMessage);
+
+          const imgResult = await fetchGeneratedAIImage(finalUserText, '1:1');
+          assistantMessage.statusText = '';
+          assistantMessage.generatedImage = {
+            url: imgResult.url,
+            prompt: finalUserText,
+            ratio: '1:1'
+          };
+          assistantMessage.content = `Berikut hasil gambar berdasarkan deskripsi: *"${finalUserText}"*`;
+          toggleChatImageMode(false);
+        }
+        // CASE B: Image Upload & Visual Analysis (Vision + OCR)
+        else if (imagesToSend.length > 0) {
+          assistantMessage.statusText = 'Membaca dan menganalisis isi gambar...';
+          updateAssistantMessageDOM(assistantMessage);
+
+          const visionReply = await analyzeImagesWithVisionAndOCR(
+            finalUserText,
+            imagesToSend,
+            abortController.signal,
+            (status) => {
+              assistantMessage.statusText = status;
+              updateAssistantMessageDOM(assistantMessage);
+            },
+            (partialText) => {
+              assistantMessage.statusText = '';
+              assistantMessage.content = partialText;
+              updateAssistantMessageDOM(assistantMessage);
+            }
+          );
+          assistantMessage.statusText = '';
+          assistantMessage.content = visionReply;
+        }
+        // CASE C: Standard Text Chat + Optional Real Web Search
+        else {
+          const needsSearch = searchWebEnabled || shouldAutoTriggerWebSearch(finalUserText);
+          let searchContext = null;
+
+          if (needsSearch) {
+            searchContext = await performRealWebSearch(
+              finalUserText,
+              (status) => {
+                assistantMessage.statusText = status;
+                updateAssistantMessageDOM(assistantMessage);
+              },
+              abortController.signal
+            );
+            assistantMessage.sources = searchContext.sources;
+            assistantMessage.searchQuery = searchContext.query;
+          }
+
+          assistantMessage.statusText = aiEngine === 'local'
+            ? 'Memproses secara lokal di browser...'
+            : 'Menyusun jawaban...';
+          updateAssistantMessageDOM(assistantMessage);
+
+          if (aiEngine === 'local') {
+            const localReply = await generateWithLocalBrowserModel(currentChat.messages.slice(0, -1), searchContext);
+            assistantMessage.statusText = '';
+            assistantMessage.content = localReply;
+          } else {
+            const cloudReply = await generateWithFreeCloudAI(
+              currentChat.messages.slice(0, -1),
+              searchContext,
+              abortController.signal,
+              (partialText) => {
+                assistantMessage.statusText = '';
+                assistantMessage.content = partialText;
+                updateAssistantMessageDOM(assistantMessage);
+              }
+            );
+            assistantMessage.statusText = '';
+            assistantMessage.content = cloudReply;
+          }
+        }
+      } catch (err) {
+        assistantMessage.statusText = '';
+        if (err.name === 'AbortError') {
+          assistantMessage.content = assistantMessage.content || '_Generasi dihentikan oleh pengguna._';
+        } else {
+          console.error('Generation error:', err);
+          assistantMessage.content = `Maaf, terjadi kendala saat memproses permintaan Anda (${escapeHtml(err.message || 'Gangguan jaringan')}). Silakan coba klik **Regenerate** atau periksa koneksi internet Anda.`;
+        }
+      } finally {
+        isGenerating = false;
+        abortController = null;
+        updateGenerationButtons(false);
+        saveChatsToStorage();
+        updateAssistantMessageDOM(assistantMessage);
+      }
+    }
+
+    function stopGeneration() {
+      if (abortController) {
+        abortController.abort();
+      }
+      isGenerating = false;
+      updateGenerationButtons(false);
+    }
+
+    function updateGenerationButtons(generating) {
+      const sendBtn = document.getElementById('btn-send');
+      const stopBtn = document.getElementById('btn-stop');
+      if (generating) {
+        sendBtn.classList.add('hidden');
+        stopBtn.classList.remove('hidden');
+      } else {
+        sendBtn.classList.remove('hidden');
+        stopBtn.classList.add('hidden');
+      }
+    }
+
+    function regenerateResponse(msgId) {
+      if (isGenerating) return;
+      const currentChat = chats.find(c => c.id === activeChatId);
+      if (!currentChat) return;
+
+      const msgIndex = currentChat.messages.findIndex(m => m.id === msgId);
+      if (msgIndex === -1) return;
+
+      let userMsg = null;
+      for (let i = msgIndex - 1; i >= 0; i--) {
+        if (currentChat.messages[i].role === 'user') {
+          userMsg = currentChat.messages[i];
+          currentChat.messages = currentChat.messages.slice(0, i);
+          break;
+        }
+      }
+
+      if (userMsg) {
+        const restoredImages = (userMsg.images || []).map((img, idx) => ({
+          id: 're_' + idx,
+          name: img.name || 'gambar.jpg',
+          dataUrl: img.dataUrl,
+          base64: img.dataUrl.split(',')[1],
+          mimeType: 'image/jpeg'
+        }));
+        handleSendMessage(userMsg.content, restoredImages);
+      }
+    }
+
+    // =========================================================================
+    // 9. MULTIMODAL VISION & LOCAL OCR IMAGE ANALYSIS (NO API KEY)
+    // =========================================================================
+    async function analyzeImagesWithVisionAndOCR(userQuestion, images, signal, onStatus, onStreamUpdate) {
+      // Step 1: Run local OCR via Tesseract.js to accurately capture any text/math/document in the image
+      let extractedOcrText = '';
+      if (typeof Tesseract !== 'undefined') {
+        try {
+          onStatus('Membaca teks & detail dokumen pada gambar (OCR)...');
+          const ocrParts = [];
+          for (let i = 0; i < images.length; i++) {
+            const res = await Tesseract.recognize(images[i].dataUrl, 'ind+eng');
+            const cleaned = (res?.data?.text || '').trim();
+            if (cleaned) {
+              ocrParts.push(`[Teks terbaca pada Gambar ${i + 1}]:\n${cleaned}`);
+            }
+          }
+          extractedOcrText = ocrParts.join('\n\n');
+        } catch (ocrErr) {
+          console.warn('OCR lokal melewati gambar:', ocrErr);
+        }
+      }
+
+      // Step 2: Send image(s) + OCR context to free multimodal vision endpoint
+      onStatus('Menganalisis konteks visual gambar...');
+      const userContentParts = [
+        {
+          type: 'text',
+          text: extractedOcrText
+            ? `${userQuestion}\n\n[Hasil pembacaan teks OCR dari gambar sebagai referensi tambahan]:\n${extractedOcrText}`
+            : userQuestion
+        }
+      ];
+
+      images.forEach(img => {
+        userContentParts.push({
+          type: 'image_url',
+          image_url: { url: img.dataUrl }
+        });
+      });
+
+      const payload = {
+        model: 'openai',
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: userContentParts }
+        ],
+        stream: false
+      };
+
+      try {
+        const response = await fetch('https://text.pollinations.ai/openai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        const reply = data?.choices?.[0]?.message?.content;
+        if (reply && reply.trim()) {
+          return reply.trim();
+        }
+        throw new Error('Respons vision kosong');
+      } catch (visionErr) {
+        if (visionErr.name === 'AbortError') throw visionErr;
+
+        // Fallback if cloud vision is unreachable: answer using local OCR + LLM
+        if (extractedOcrText) {
+          onStatus('Menyusun jawaban berdasarkan teks yang terbaca pada gambar...');
+          const fallbackPrompt = `Pengguna mengunggah gambar dengan pertanyaan: "${userQuestion}".\nBerikut teks yang berhasil dibaca secara lokal dari gambar:\n${extractedOcrText}\n\nTolong jawab dan jelaskan pertanyaan pengguna berdasarkan isi teks gambar tersebut secara jelas dan jujur.`;
+          return await generateWithFreeCloudAI(
+            [{ role: 'user', content: fallbackPrompt }],
+            null,
+            signal,
+            onStreamUpdate
+          );
+        }
+
+        throw new Error('Layanan analisis visual sedang tidak dapat dijangkau dan tidak ditemukan teks terbaca pada gambar.');
+      }
+    }
+
+    // =========================================================================
+    // 10. CLOUD FREE TEXT INFERENCE (NO API KEY)
+    // =========================================================================
+    async function generateWithFreeCloudAI(historyMessages, searchContext, signal, onStreamUpdate) {
+      const apiMessages = [
+        { role: 'system', content: SYSTEM_PROMPT }
+      ];
+
+      const recentHistory = historyMessages.slice(-8);
+      recentHistory.forEach((msg, idx) => {
+        let content = msg.content;
+        // Inject real web search results into the last user prompt
+        if (idx === recentHistory.length - 1 && msg.role === 'user' && searchContext) {
+          if (searchContext.sources.length > 0) {
+            const formattedSources = searchContext.sources.map((s, i) =>
+              `[${i + 1}] Judul: ${s.title} | Sumber/Jurnal: ${s.siteName} | Penulis: ${s.authors.join('; ') || 'Tidak tercantum'} | Tahun: ${s.year || 'Tidak tercantum'} | DOI: ${s.doi || '-'} | URL: ${s.url} | Ringkasan: ${s.relevance}`
+            ).join('\n');
+
+            content += `\n\n[HASIL PENCARIAN WEB NYATA UNTUK PERTANYAAN INI]:\n${formattedSources}\n\nInstruksi: Jawab pertanyaan pengguna dengan akurat berdasarkan sumber nyata di atas. Jika pengguna meminta daftar pustaka, susun dalam format APA 7th Edition menggunakan metadata asli di atas dan sertakan URL-nya. Jangan mengarang data yang tidak ada.`;
+          } else {
+            content += `\n\n[CATATAN PENCARIAN WEB]: Pencarian otomatis untuk "${searchContext.query}" tidak menemukan hasil spesifik dari database terbuka. Jawab pertanyaan pengguna dengan jujur berdasarkan pengetahuan yang terverifikasi tanpa mengarang tautan atau daftar pustaka palsu.`;
+          }
+        }
+        apiMessages.push({ role: msg.role, content });
+      });
+
+      const response = await fetch('https://text.pollinations.ai/openai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'openai',
+          messages: apiMessages,
+          stream: true
+        }),
+        signal
+      });
+
+      if (!response.ok) {
+        throw new Error(`Status server: ${response.status}`);
+      }
+
+      // Handle SSE Streaming
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let fullText = '';
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed || !trimmed.startsWith('data:')) continue;
+          const dataStr = trimmed.slice(5).trim();
+          if (dataStr === '[DONE]') continue;
+
+          try {
+            const parsed = JSON.parse(dataStr);
+            const delta = parsed?.choices?.[0]?.delta?.content;
+            if (delta) {
+              fullText += delta;
+              onStreamUpdate(fullText);
+            }
+          } catch (_) {
+            // Ignore partial JSON chunk
+          }
+        }
+      }
+
+      if (!fullText.trim()) {
+        throw new Error('Tidak ada teks yang diterima dari mesin AI.');
+      }
+
+      return fullText.trim();
+    }
+
+    // =========================================================================
+    // 11. LOCAL BROWSER AI MODEL (TRANSFORMERS.JS WASM / WEBGPU)
+    // =========================================================================
+    async function checkWebGPUStatus() {
+      const statusEl = document.getElementById('device-webgpu-status');
+      if ('gpu' in navigator) {
+        try {
+          const adapter = await navigator.gpu.requestAdapter();
+          if (adapter) {
+            statusEl.textContent = 'Didukung (Akselerasi Hardware WebGPU)';
+            return;
+          }
+        } catch (_) {}
+      }
+      statusEl.textContent = 'Tidak Tersedia (Menggunakan WASM CPU)';
+    }
+
+    function changeAIEngine(engine) {
+      aiEngine = engine;
+      localStorage.setItem(ENGINE_PREF_KEY, engine);
+      syncEngineUI();
+      if (engine === 'local' && !localModelReady && !isLocalModelLoading) {
+        initLocalModel();
+      }
+    }
+
+    function syncEngineUI() {
+      const labelEl = document.getElementById('engine-status-label');
+      const dotEl = document.getElementById('engine-status-dot');
+      const radios = document.querySelectorAll('input[name="ai-engine"]');
+      radios.forEach(r => { r.checked = r.value === aiEngine; });
+
+      if (aiEngine === 'local') {
+        labelEl.textContent = localModelReady ? 'Lokal Browser (Aktif)' : 'Lokal Browser (Siap Muat)';
+        dotEl.className = 'w-1.5 h-1.5 rounded-full ' + (localModelReady ? 'bg-emerald-400' : 'bg-amber-400');
+      } else {
+        labelEl.textContent = 'Mode Gratis Aktif';
+        dotEl.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400';
+      }
+    }
+
+    async function initLocalModel() {
+      if (isLocalModelLoading || localModelReady) return;
+      isLocalModelLoading = true;
+
+      const banner = document.getElementById('local-model-banner');
+      const bannerText = document.getElementById('local-model-status-text');
+      const bannerPct = document.getElementById('local-model-percent');
+      const bannerBar = document.getElementById('local-model-bar');
+
+      const settingsStatus = document.getElementById('settings-local-status');
+      const settingsWrap = document.getElementById('settings-progress-wrapper');
+      const settingsLabel = document.getElementById('settings-progress-label');
+      const settingsPct = document.getElementById('settings-progress-pct');
+      const settingsBar = document.getElementById('settings-progress-bar');
+
+      banner.classList.remove('hidden');
+      settingsWrap.classList.remove('hidden');
+      settingsStatus.textContent = 'Mengunduh & memuat model...';
+
+      try {
+        const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2');
+        env.allowLocalModels = false;
+
+        localPipeline = await pipeline('text-generation', 'Xenova/Qwen1.5-0.5B-Chat', {
+          progress_callback: (info) => {
+            if (info.status === 'progress' && typeof info.progress === 'number') {
+              const pct = Math.round(info.progress);
+              bannerText.textContent = `Mengunduh model lokal (${info.file || 'weights'})...`;
+              bannerPct.textContent = `${pct}%`;
+              bannerBar.style.width = `${pct}%`;
+
+              settingsLabel.textContent = `Mengunduh ${info.file || 'model'}...`;
+              settingsPct.textContent = `${pct}%`;
+              settingsBar.style.width = `${pct}%`;
+            } else if (info.status === 'ready') {
+              bannerText.textContent = 'Model lokal siap digunakan di browser!';
+              bannerPct.textContent = '100%';
+              bannerBar.style.width = '100%';
+            }
+          }
+        });
+
+        localModelReady = true;
+        settingsStatus.textContent = 'Aktif & Tersimpan di Cache Browser';
+        syncEngineUI();
+        showToast('Model AI lokal siap digunakan');
+        setTimeout(() => banner.classList.add('hidden'), 2500);
+      } catch (err) {
+        console.error('Gagal memuat model lokal:', err);
+        settingsStatus.textContent = 'Gagal memuat (Perangkat/Jaringan tidak mendukung)';
+        bannerText.textContent = 'Gagal memuat model lokal. Beralih otomatis ke Mode Cloud Gratis.';
+        changeAIEngine('cloud');
+      } finally {
+        isLocalModelLoading = false;
+      }
+    }
+
+    async function generateWithLocalBrowserModel(historyMessages, searchContext) {
+      if (!localModelReady) {
+        await initLocalModel();
+      }
+      if (!localPipeline) {
+        throw new Error('Model lokal tidak tersedia di perangkat ini.');
+      }
+
+      const lastUser = historyMessages[historyMessages.length - 1]?.content || '';
+      const messages = [
+        { role: 'system', content: 'Kamu adalah AKSARA AI oleh RANGGA. Jawab singkat, jelas, dan jujur dalam Bahasa Indonesia.' },
+        { role: 'user', content: lastUser }
+      ];
+
+      const prompt = localPipeline.tokenizer.apply_chat_template(messages, {
+        tokenize: false,
+        add_generation_prompt: true
+      });
+
+      const output = await localPipeline(prompt, {
+        max_new_tokens: 350,
+        temperature: 0.7,
+        do_sample: true
+      });
+
+      const generated = output[0]?.generated_text || '';
+      const reply = generated.replace(prompt, '').trim();
+      return reply || 'Maaf, model lokal tidak menghasilkan respons. Coba ulangi pertanyaan Anda.';
+    }
+
+    // =========================================================================
+    // 12. AI IMAGE GENERATOR (STUDIO & IN-CHAT)
+    // =========================================================================
+    function selectStudioRatio(ratio) {
+      studioRatio = ratio;
+      document.querySelectorAll('.ratio-btn').forEach(btn => {
+        btn.classList.remove('bg-white', 'text-black', 'font-medium');
+        btn.classList.add('text-[#8E8E93]', 'hover:text-white');
+      });
+      const activeBtn = document.getElementById('ratio-' + ratio.replace(':', '-'));
+      if (activeBtn) {
+        activeBtn.classList.add('bg-white', 'text-black', 'font-medium');
+        activeBtn.classList.remove('text-[#8E8E93]', 'hover:text-white');
+      }
+    }
+
+    function getDimensionsForRatio(ratio) {
+      if (ratio === '16:9') return { width: 1024, height: 576 };
+      if (ratio === '9:16') return { width: 576, height: 1024 };
+      return { width: 768, height: 768 };
+    }
+
+    async function fetchGeneratedAIImage(prompt, ratio) {
+      const { width, height } = getDimensionsForRatio(ratio);
+      const seed = Math.floor(Math.random() * 999999);
+      const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&seed=${seed}&nologo=true`;
+
+      // Preload image to verify it actually generates without error
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        const timeout = setTimeout(() => {
+          reject(new Error('Waktu pembuatan gambar habis (timeout).'));
+        }, 35000);
+
+        img.onload = () => {
+          clearTimeout(timeout);
+          resolve({ url: imageUrl, width, height });
+        };
+        img.onerror = () => {
+          clearTimeout(timeout);
+          reject(new Error('Layanan pembuat gambar gratis sedang sibuk atau koneksi terputus.'));
+        };
+        img.src = imageUrl;
+      });
+    }
+
+    async function generateStudioImage() {
+      const promptEl = document.getElementById('studio-image-prompt');
+      const prompt = promptEl.value.trim();
+      if (!prompt) {
+        showToast('Masukkan deskripsi gambar terlebih dahulu');
+        promptEl.focus();
+        return;
+      }
+
+      const resultContainer = document.getElementById('studio-result-container');
+      const statusLabel = document.getElementById('studio-status-label');
+      const actionsBox = document.getElementById('studio-action-buttons');
+      const loadingBox = document.getElementById('studio-loading-box');
+      const errorBox = document.getElementById('studio-error-box');
+      const imgWrapper = document.getElementById('studio-image-wrapper');
+      const imgPreview = document.getElementById('studio-image-preview');
+      const genBtn = document.getElementById('btn-studio-generate');
+
+      resultContainer.classList.remove('hidden');
+      loadingBox.classList.remove('hidden');
+      errorBox.classList.add('hidden');
+      imgWrapper.classList.add('hidden');
+      actionsBox.classList.add('hidden');
+      statusLabel.textContent = `Sedang membuat gambar (${studioRatio})...`;
+      genBtn.disabled = true;
+
+      try {
+        const res = await fetchGeneratedAIImage(prompt, studioRatio);
+        currentStudioImageUrl = res.url;
+        imgPreview.src = res.url;
+        loadingBox.classList.add('hidden');
+        imgWrapper.classList.remove('hidden');
+        actionsBox.classList.remove('hidden');
+        statusLabel.textContent = `Selesai · Rasio ${studioRatio}`;
+      } catch (err) {
+        loadingBox.classList.add('hidden');
+        errorBox.classList.remove('hidden');
+        errorBox.textContent = `Tidak dapat membuat gambar saat ini: ${err.message} Silakan coba lagi beberapa saat lagi.`;
+        statusLabel.textContent = 'Gagal memproses gambar';
+      } finally {
+        genBtn.disabled = false;
+      }
+    }
+
+    async function downloadGeneratedImage(url, filename) {
+      if (!url) return;
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename || 'aksara-ai-image.jpg';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+        showToast('Gambar berhasil diunduh');
+      } catch (_) {
+        window.open(url, '_blank');
+      }
+    }
+
+    // =========================================================================
+    // 13. CHAT RENDERING & MESSAGE ACTIONS
+    // =========================================================================
+    function renderEmptyState() {
+      document.getElementById('empty-state').classList.remove('hidden');
+      document.getElementById('messages-list').classList.add('hidden');
+      document.getElementById('messages-list').innerHTML = '';
+    }
+
+    function renderActiveChat() {
+      const currentChat = chats.find(c => c.id === activeChatId);
+      if (!currentChat || currentChat.messages.length === 0) {
+        renderEmptyState();
+        return;
+      }
+
+      document.getElementById('empty-state').classList.add('hidden');
+      const listEl = document.getElementById('messages-list');
+      listEl.classList.remove('hidden');
+
+      listEl.innerHTML = currentChat.messages.map(msg => renderMessageBubble(msg)).join('');
+      scrollToBottom();
+    }
+
+    function renderMessageBubble(msg) {
+      if (msg.role === 'user') {
+        const imagesHTML = (msg.images && msg.images.length > 0)
+          ? `<div class="flex flex-wrap gap-2 mb-2.5">
+              ${msg.images.map(img => `
+                <img src="${img.dataUrl}" alt="${escapeHtml(img.name || 'Gambar')}" class="max-h-48 max-w-full rounded-xl border border-[#2E2E2E] object-contain" />
+              `).join('')}
+            </div>`
+          : '';
+
+        return `
+          <div class="flex justify-end fade-in">
+            <div class="max-w-[85%] sm:max-w-[75%] rounded-2xl bg-[#161616] border border-[#262626] px-4 py-3 text-sm text-[#F5F5F7]">
+              ${imagesHTML}
+              <div class="whitespace-pre-wrap leading-relaxed">${escapeHtml(msg.content)}</div>
+            </div>
+          </div>
+        `;
+      } else {
+        return `
+          <div id="assistant-msg-${msg.id}" class="flex flex-col space-y-2 fade-in">
+            <div class="flex items-center gap-2 text-xs text-[#8E8E93] select-none">
+              <span class="font-semibold text-white">AKSARA AI</span>
+              <span>·</span>
+              <span>by RANGGA</span>
+            </div>
+            <div class="assistant-body-slot">
+              ${buildAssistantInnerHTML(msg)}
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function updateAssistantMessageDOM(msg) {
+      const container = document.getElementById(`assistant-msg-${msg.id}`);
+      if (!container) return;
+      const slot = container.querySelector('.assistant-body-slot');
+      if (slot) {
+        slot.innerHTML = buildAssistantInnerHTML(msg);
+      }
+      scrollToBottom();
+    }
+
+    function buildAssistantInnerHTML(msg) {
+      let html = '';
+
+      // Thinking / Search Progress Indicator
+      if (msg.statusText) {
+        html += `
+          <div class="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-[#161616] border border-[#262626] text-xs text-[#8E8E93]">
+            <span class="flex gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-white dot-pulse"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-white dot-pulse"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-white dot-pulse"></span>
+            </span>
+            <span>${escapeHtml(msg.statusText)}</span>
+          </div>
+        `;
+      }
+
+      // Generated AI Image inside Chat
+      if (msg.generatedImage && msg.generatedImage.url) {
+        html += `
+          <div class="my-2 p-3 rounded-2xl bg-[#161616] border border-[#262626] inline-block max-w-md space-y-2.5">
+            <img src="${msg.generatedImage.url}" alt="${escapeHtml(msg.generatedImage.prompt)}" class="w-full rounded-xl border border-[#262626] object-contain" />
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] text-[#8E8E93] truncate">AKSARA AI Image</span>
+              <button type="button" onclick="downloadGeneratedImage('${msg.generatedImage.url}', 'aksara-ai.jpg')" class="px-3 py-1 rounded-lg bg-white hover:bg-[#E5E5E5] text-black text-xs font-medium transition-colors">
+                Download Gambar
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      // Rendered Markdown Content
+      if (msg.content) {
+        const rawHtml = typeof marked !== 'undefined' ? marked.parse(msg.content) : escapeHtml(msg.content);
+        const safeHtml = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(rawHtml) : rawHtml;
+        html += `<div class="markdown-body">${safeHtml}</div>`;
+      }
+
+      // Verified Web Search References Section
+      if (msg.sources && msg.sources.length > 0 && !msg.statusText) {
+        html += `
+          <div class="mt-4 p-4 rounded-2xl bg-[#161616] border border-[#262626] space-y-3">
+            <div class="text-xs font-semibold text-white">Sumber Referensi</div>
+            <div class="grid grid-cols-1 gap-2.5">
+              ${msg.sources.map((src, idx) => `
+                <a href="${escapeHtml(src.url)}" target="_blank" rel="noopener noreferrer" class="block p-3 rounded-xl bg-[#0B0B0B] hover:bg-[#191919] border border-[#262626] transition-colors">
+                  <div class="text-xs font-medium text-white">${idx + 1}. ${escapeHtml(src.title)}</div>
+                  <div class="text-[11px] text-[#8E8E93] mt-0.5">
+                    ${escapeHtml(src.siteName)}${src.authors && src.authors.length ? ' · ' + escapeHtml(src.authors.join(', ')) : ''}${src.year ? ' (' + escapeHtml(String(src.year)) + ')' : ''}
+                  </div>
+                  <div class="text-[11px] text-[#737373] mt-1 line-clamp-2">${escapeHtml(src.relevance)}</div>
+                </a>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else if (msg.searchQuery && (!msg.sources || msg.sources.length === 0) && !msg.statusText) {
+        // Fallback external browser search button if automated open APIs returned zero matches
+        const scholarUrl = `https://scholar.google.com/scholar?q=${encodeURIComponent(msg.searchQuery)}`;
+        const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(msg.searchQuery)}`;
+        html += `
+          <div class="mt-3 p-3.5 rounded-xl bg-[#161616] border border-[#262626] flex flex-wrap items-center justify-between gap-2 text-xs">
+            <span class="text-[#8E8E93]">Ingin menelusuri sumber langsung di mesin pencari?</span>
+            <div class="flex gap-2">
+              <a href="${scholarUrl}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-[#222222] hover:bg-[#2C2C2C] text-white transition-colors">Google Scholar ↗</a>
+              <a href="${googleUrl}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-[#222222] hover:bg-[#2C2C2C] text-white transition-colors">Google Search ↗</a>
+            </div>
+          </div>
+        `;
+      }
+
+      // Action Toolbar (Copy & Regenerate) once message completes
+      if (!msg.statusText && msg.content) {
+        html += `
+          <div class="pt-2 flex items-center gap-2">
+            <button type="button" onclick="copyAssistantAnswer('${msg.id}')" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#161616] hover:bg-[#1E1E1E] border border-[#262626] text-[11px] text-[#8E8E93] hover:text-white transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              <span>Salin Jawaban</span>
+            </button>
+            <button type="button" onclick="regenerateResponse('${msg.id}')" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#161616] hover:bg-[#1E1E1E] border border-[#262626] text-[11px] text-[#8E8E93] hover:text-white transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+              <span>Regenerate</span>
+            </button>
+          </div>
+        `;
+      }
+
+      return html;
+    }
+
+    function scrollToBottom() {
+      const scroller = document.getElementById('chat-scroll-container');
+      scroller.scrollTop = scroller.scrollHeight;
+    }
+
+    // =========================================================================
+    // 14. CLIPBOARD, MODAL & TOAST UTILITIES
+    // =========================================================================
+    function copyTextToClipboard(text) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast('Tersalin ke clipboard');
+      } catch (e) {
+        showToast('Gagal menyalin teks');
+      }
+      document.body.removeChild(textarea);
+    }
+
+    function copyAssistantAnswer(msgId) {
+      const currentChat = chats.find(c => c.id === activeChatId);
+      const msg = currentChat?.messages.find(m => m.id === msgId);
+      if (msg && msg.content) {
+        copyTextToClipboard(msg.content);
+      }
+    }
+
+    function copyCodeBlock(btn) {
+      const codeEl = btn.closest('div').nextElementSibling?.querySelector('code');
+      if (codeEl) {
+        copyTextToClipboard(codeEl.innerText);
+        const span = btn.querySelector('span');
+        if (span) {
+          const orig = span.textContent;
+          span.textContent = 'Tersalin!';
+          setTimeout(() => { span.textContent = orig; }, 1500);
+        }
+      }
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.remove('hidden');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 2200);
+    }
+
+    function openModal({ title, message, showInput = false, inputValue = '', confirmText = 'Ya', onConfirm }) {
+      const modal = document.getElementById('custom-modal');
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-message').textContent = message;
+
+      const inputEl = document.getElementById('modal-input');
+      if (showInput) {
+        inputEl.classList.remove('hidden');
+        inputEl.value = inputValue;
+      } else {
+        inputEl.classList.add('hidden');
+      }
+
+      const confirmBtn = document.getElementById('modal-confirm-btn');
+      confirmBtn.textContent = confirmText;
+      confirmBtn.onclick = () => {
+        const val = inputEl.value;
+        closeModal();
+        if (onConfirm) onConfirm(val);
+      };
+
+      modal.classList.remove('hidden');
+      if (showInput) setTimeout(() => inputEl.focus(), 50);
+    }
+
+    function closeModal() {
+      document.getElementById('custom-modal').classList.add('hidden');
+    }
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+  </script>
+</body>
+</html>
